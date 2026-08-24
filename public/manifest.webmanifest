@@ -1,0 +1,23 @@
+{
+  "name": "Cap Secondaire",
+  "short_name": "Cap Secondaire",
+  "description": "Préparation personnalisée aux admissions du secondaire au Québec.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f5f7fc",
+  "theme_color": "#10214f",
+  "lang": "fr-CA",
+  "categories": ["education", "productivity"],
+  "shortcuts": [
+    { "name": "Ma mission", "short_name": "Mission", "url": "/#mission", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Examens blancs", "short_name": "Examens", "url": "/#exams", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

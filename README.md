@@ -7,7 +7,7 @@ Application PWA familiale de préparation à l'admission en 1re secondaire au Qu
 - Tableau de bord élève et compte à rebours vers le prochain objectif.
 - Smart Study Plan basé sur la maîtrise, la tendance et les erreurs récentes.
 - Diagnostic de 24 questions pouvant couvrir 45 à 60 minutes.
-- Profil de démonstration réinitialisé, avec l’Académie Lafontaine le 19 septembre 2026 comme premier objectif, puis l’Externat Sacré-Cœur.
+- Profil de démonstration réinitialisé avec une progression vierge et aucun établissement sélectionné par défaut.
 - Mission quotidienne avec correction pédagogique immédiate.
 - Atelier Français+ avec 60 activités interactives : conjugaison, homophones, correction de phrases et mini-dictées audio.
 - 19 examens : formats express, révisions par matière, simulations par école et préparation Jour J.
