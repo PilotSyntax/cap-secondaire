@@ -1,5 +1,5 @@
-const CACHE = "cap-secondaire-v3";
-const CORE = ["/", "/offline", "/manifest.webmanifest", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
+const CACHE = "cap-secondaire-v4";
+const CORE = ["/offline", "/manifest.webmanifest", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
@@ -16,11 +16,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.pathname.startsWith("/api/")) return;
   if (event.request.mode === "navigate") {
-    event.respondWith(fetch(event.request).then((response) => {
-      const copy = response.clone();
-      if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, copy));
-      return response;
-    }).catch(async () => (await caches.match(event.request)) || (await caches.match("/")) || (await caches.match("/offline"))));
+    event.respondWith(fetch(event.request).catch(async () => (await caches.match("/offline"))));
     return;
   }
   if (url.origin !== self.location.origin) return;

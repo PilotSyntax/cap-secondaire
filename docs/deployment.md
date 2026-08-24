@@ -16,6 +16,16 @@ Copier `.openai/hosting.example.json` vers `.openai/hosting.json`, puis remplace
 
 Le manifeste est dans `public/manifest.webmanifest`, le service worker dans `public/sw.js` et la page de repli dans `app/offline/page.tsx`.
 
+## Authentification Google
+
+1. Créer un identifiant OAuth 2.0 de type « application Web » dans Google Cloud.
+2. Ajouter l’origine HTTPS du site aux origines JavaScript autorisées.
+3. Configurer `GOOGLE_CLIENT_ID` comme variable serveur du Site.
+4. Pour un accès sur invitation, configurer `ALLOWED_USER_EMAILS` avec les adresses autorisées séparées par des virgules.
+5. Pour transférer l’ancien profil familial à un compte précis lors de sa première connexion, configurer `BOOTSTRAP_USER_EMAIL` côté serveur. Ne jamais inscrire cette adresse dans le dépôt public.
+
+Les sessions sont stockées sous forme de condensats dans D1, expirent après 30 jours et utilisent un témoin `HttpOnly`, `Secure` et `SameSite=Lax`.
+
 ## Limites du MVP
 
-La version actuelle utilise un seul enregistrement familial D1. Un site public ne doit donc servir que de démonstration sans données personnelles. Un usage public multi-famille ou une distribution via App Store/Google Play exige une stratégie d'identité familiale et, pour les boutiques mobiles, un emballage tel que Capacitor.
+La branche principale utilise encore un seul enregistrement familial D1. La branche `feature/multi-user-auth` ajoute l’isolation par utilisateur. Une distribution via App Store/Google Play exige également un emballage tel que Capacitor.
