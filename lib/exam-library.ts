@@ -253,6 +253,20 @@ export const EXAM_LIBRARY: ExamDefinition[] = [
     composition: { Français: 16, Mathématiques: 14, Logique: 6 },
   },
   {
+    id: "admission-2026-avance",
+    name: "Défi admission 2026 · Avancé",
+    duration: 55,
+    count: 24,
+    subjects: ["Français", "Mathématiques", "Logique"],
+    description: "Nouveaux problèmes à étapes, compréhension, langue et logique de niveau moyen à élevé.",
+    accent: "teal",
+    category: "Simulations",
+    badge: "2026 · Avancé",
+    symbol: "26",
+    composition: { Français: 10, Mathématiques: 10, Logique: 4 },
+    note: "Contenu original aligné sur les formats publics d’admission 2027-2028; ce ne sont pas des questions confidentielles d’école.",
+  },
+  {
     id: "jour-j",
     name: "Simulation complète Jour J",
     duration: 150,
@@ -295,19 +309,27 @@ function selectUnique(pool: Question[], count: number, offset: number) {
   return selected;
 }
 
-export function buildExamQuestions(exam: ExamDefinition) {
-  const offset = examOffset(exam.id);
+export function buildExamQuestions(exam: ExamDefinition, options: { excludeIds?: string[]; attempt?: number; minDifficulty?: Question["difficulty"]; preferSession2026?: boolean } = {}) {
+  const excluded = new Set(options.excludeIds ?? []);
+  const attempt = options.attempt ?? 0;
+  const offset = examOffset(exam.id) + attempt * 37;
+  const eligible = (question: Question) =>
+    (!options.minDifficulty || question.difficulty >= options.minDifficulty) &&
+    (!options.preferSession2026 || question.tags.includes("session-2026"));
 
   if (exam.composition) {
-    return (Object.entries(exam.composition) as [Subject, number][]).flatMap(([subject, count], index) =>
-      selectUnique(QUESTION_BANK.filter((question) => question.subject === subject), count, offset + index * 23),
-    );
+    return (Object.entries(exam.composition) as [Subject, number][]).flatMap(([subject, count], index) => {
+      const fullPool = QUESTION_BANK.filter((question) => question.subject === subject && eligible(question));
+      const freshPool = fullPool.filter((question) => !excluded.has(question.id));
+      return selectUnique(freshPool.length >= count ? freshPool : fullPool, count, offset + index * 23);
+    });
   }
 
-  const pool = QUESTION_BANK.filter((question) =>
-    exam.subjects.includes(question.subject) && (!exam.skills || exam.skills.includes(question.skill)),
+  const fullPool = QUESTION_BANK.filter((question) =>
+    exam.subjects.includes(question.subject) && (!exam.skills || exam.skills.includes(question.skill)) && eligible(question),
   );
-  return selectUnique(pool, exam.count, offset);
+  const freshPool = fullPool.filter((question) => !excluded.has(question.id));
+  return selectUnique(freshPool.length >= exam.count ? freshPool : fullPool, exam.count, offset);
 }
 
 export function validateExamLibrary() {
