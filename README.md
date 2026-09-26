@@ -13,6 +13,7 @@ Application PWA familiale de préparation à l'admission en 1re secondaire au Qu
 - 19 examens : formats express, révisions par matière, simulations par école et préparation Jour J.
 - Carnet d'erreurs avec réintroduction de compétences sous une nouvelle forme.
 - Coach hybride sécurisé : explication des erreurs, questions-réponses et exercices personnalisés à la demande.
+- Connexion Google, sessions révocables et progression isolée par utilisateur sur la branche `feature/multi-user-auth`.
 - Espace Parent, rapport hebdomadaire, profil et export/import JSON.
 - Douze écoles préconfigurées; dates, statuts et écoles personnalisées modifiables.
 - PWA installable sur iPhone, iPad, Android et ordinateur, avec guide intégré, mode plein écran, cache de l’interface et synchronisation au retour en ligne.
@@ -23,6 +24,7 @@ Application PWA familiale de préparation à l'admission en 1re secondaire au Qu
 - **Interface :** Next.js, React, TypeScript et CSS responsive.
 - **Hébergement :** Sites / Cloudflare Workers.
 - **Persistance :** Cloudflare D1 via Drizzle ORM; cache local uniquement comme relais hors connexion.
+- **Identité :** vérification cryptographique des jetons Google et sessions opaques stockées sous forme de condensats.
 - **PWA :** manifeste, service worker et page de repli hors connexion.
 - **IA :** logique locale déterministe toujours disponible, avec bascule facultative vers l’API Gemini `generateContent`. Les sorties distantes sont contraintes par un schéma JSON et les filtres de sécurité sont réglés au niveau strict.
 
@@ -63,6 +65,10 @@ Le projet fonctionne sans secret grâce au Coach local. Pour activer la généra
 Seuls la question ou le contexte d’erreur explicitement choisi sont envoyés. Le profil complet, les écoles suivies et l’état de progression ne sont jamais inclus dans la requête IA.
 
 Le niveau gratuit de l’API Gemini peut utiliser les requêtes pour améliorer les produits Google. Cette information est affichée dans le Coach afin que l’adulte responsable puisse faire un choix éclairé; aucune donnée d’identité ne doit être saisie.
+
+## Configuration de l’authentification
+
+La branche `feature/multi-user-auth` utilise `GOOGLE_CLIENT_ID`. Les variables facultatives `ALLOWED_USER_EMAILS` et `BOOTSTRAP_USER_EMAIL` permettent respectivement de limiter les comptes autorisés et de transférer l’ancien profil familial lors de la première connexion. Ces valeurs doivent être configurées côté serveur et ne doivent jamais être inscrites dans le dépôt.
 
 ## Déploiement
 

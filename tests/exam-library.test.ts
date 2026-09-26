@@ -22,3 +22,22 @@ test("la simulation Collège Laval respecte sa composition 60/40", () => {
   assert.equal(questions.filter((question) => question.subject === "Français").length, 18);
   assert.equal(questions.filter((question) => question.subject === "Mathématiques").length, 12);
 });
+
+
+test("la simulation admission 2026 privilégie les questions moyennes et difficiles", () => {
+  const exam = EXAM_LIBRARY.find((item) => item.id === "admission-2026-avance");
+  assert.ok(exam);
+  const questions = buildExamQuestions(exam, { minDifficulty: 2, preferSession2026: true });
+  assert.equal(questions.length, exam.count);
+  assert.ok(questions.every((question) => question.difficulty >= 2));
+  assert.ok(questions.every((question) => question.tags.includes("session-2026")));
+});
+
+test("une nouvelle tentative peut éviter les questions récemment vues", () => {
+  const exam = EXAM_LIBRARY.find((item) => item.id === "admission-2026-avance");
+  assert.ok(exam);
+  const first = buildExamQuestions(exam, { minDifficulty: 2, preferSession2026: true });
+  const second = buildExamQuestions(exam, { minDifficulty: 2, preferSession2026: true, excludeIds: first.map((question) => question.id), attempt: 1 });
+  assert.equal(second.length, exam.count);
+  assert.ok(second.some((question) => !first.some((previous) => previous.id === question.id)));
+});

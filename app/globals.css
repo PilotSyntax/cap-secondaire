@@ -456,6 +456,20 @@ button { color: inherit; }
 .content-counts strong { color: var(--navy-900); font-size: .85rem; }
 .admin-copy { margin-top: .4rem; line-height: 1.45; }
 .admin-actions { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; margin-top: .9rem; }
+.signout-button { border: 1px solid var(--line); border-radius: 999px; background: white; padding: .6rem .85rem; color: var(--muted); font-size: .66rem; font-weight: 800; cursor: pointer; }
+.signout-button:hover { border-color: #c7ccef; color: var(--indigo); }
+.login-page { display: grid; min-height: 100vh; place-items: center; padding: 1.5rem; background: radial-gradient(circle at 15% 20%,rgba(87,105,232,.16),transparent 35%),radial-gradient(circle at 85% 80%,rgba(48,190,170,.14),transparent 36%),#f5f7fb; }
+.login-card { display: grid; width: min(100%,30rem); gap: 1.55rem; border: 1px solid rgba(129,141,185,.2); border-radius: 1.6rem; background: rgba(255,255,255,.96); padding: clamp(1.5rem,4vw,2.5rem); box-shadow: 0 28px 70px rgba(20,38,83,.15); }
+.login-brand { display: flex; align-items: center; gap: .8rem; }
+.login-brand > div:last-child { display: grid; gap: .2rem; }
+.login-brand strong { color: var(--navy-900); font-size: .9rem; }
+.login-brand span { color: var(--muted); font-size: .65rem; }
+.login-copy h1 { margin: .25rem 0 .55rem; color: var(--navy-900); font-size: clamp(1.7rem,5vw,2.35rem); letter-spacing: -.04em; }
+.login-copy > p:last-child { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.65; }
+.google-login-wrap { display: grid; justify-items: center; gap: .7rem; min-height: 3rem; }
+.google-login-wrap span, .login-config-note { color: var(--muted); font-size: .7rem; }
+.login-error { margin: 0; color: var(--danger); font-size: .7rem; }
+.login-trust { display: grid; gap: .55rem; border-top: 1px solid var(--line); padding-top: 1.15rem; color: var(--muted); font-size: .65rem; }
 @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 @media (display-mode: standalone) {
@@ -484,6 +498,8 @@ button { color: inherit; }
   .main-area { margin-left: 0; padding: 1rem 1rem 6.5rem; }
   .status-pill { display: none; }
   .profile-pill span { display: none; }
+  .signout-button { padding-inline: .7rem; font-size: 0; }
+  .signout-button::after { content: "↪"; font-size: .9rem; }
   .install-banner { grid-template-columns: auto 1fr auto; }
   .install-button { grid-column: 2; justify-self: start; }
   .install-dismiss { grid-column: 3; grid-row: 1; }

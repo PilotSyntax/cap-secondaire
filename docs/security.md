@@ -15,5 +15,8 @@
 - Aucun secret commité.
 - Export explicite initié par le parent.
 - Service worker limité aux requêtes GET hors API.
+- Vérification cryptographique des jetons Google côté serveur, avec contrôle de l’émetteur, de l’audience, de l’expiration et de l’adresse vérifiée.
+- Sessions opaques révocables stockées sous forme de condensats dans D1.
+- Progression isolée par identifiant utilisateur; les API de progression et d’IA refusent les requêtes anonymes.
 
-La version actuelle utilise un identifiant familial D1 partagé. Une instance publique doit donc rester une démonstration sans données personnelles. Avant une ouverture publique avec de vraies familles, ajouter une identité adaptée, une autorisation serveur par famille, une politique de rétention et une analyse formelle de conformité à la Loi 25.
+La branche principale utilise encore un identifiant familial D1 partagé. La branche `feature/multi-user-auth` ajoute une identité Google et une autorisation serveur par utilisateur. Avant une ouverture publique avec de vraies familles, compléter la politique de rétention et une analyse formelle de conformité à la Loi 25.

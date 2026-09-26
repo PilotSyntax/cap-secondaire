@@ -12,8 +12,6 @@ import { ErrorsView, ParentView, SchoolsView } from "./management-views";
 export type View = "dashboard" | "mission" | "french" | "coach" | "exams" | "errors" | "schools" | "parent";
 export type MissionMode = "smart" | "diagnostic";
 
-const LOCAL_CACHE_KEY = "cap-secondaire-offline-cache-v2";
-
 const navItems: Array<{ id: View; label: string; icon: string }> = [
   { id: "dashboard", label: "Accueil", icon: "⌂" },
   { id: "mission", label: "Ma mission", icon: "◎" },
@@ -48,7 +46,8 @@ function viewFromHash(): View | null {
   return navItems.some((item) => item.id === candidate) ? candidate : null;
 }
 
-export function CapSecondaireApp() {
+export function CapSecondaireApp({ user }: { user: { id: string; displayName: string } }) {
+  const localCacheKey = `cap-secondaire-offline-cache-v3:${user.id}`;
   const [view, setView] = useState<View>("dashboard");
   const [missionMode, setMissionMode] = useState<MissionMode>("smart");
   const [state, setState] = useState<AppState>(DEFAULT_STATE);
@@ -59,7 +58,7 @@ export function CapSecondaireApp() {
 
   useEffect(() => {
     window.localStorage.removeItem("cap-secondaire-offline-cache");
-    const cached = window.localStorage.getItem(LOCAL_CACHE_KEY);
+    const cached = window.localStorage.getItem(localCacheKey);
     queueMicrotask(() => {
       if (cached) {
         try { setState(JSON.parse(cached) as AppState); } catch { /* cache ignoré */ }
@@ -69,8 +68,9 @@ export function CapSecondaireApp() {
     const load = async () => {
       try {
         const response = await fetch("/api/state", { cache: "no-store" });
+        if (response.status === 401) { window.location.assign("/login"); return; }
         const data = (await response.json()) as { state?: AppState; source?: string };
-        if (data.state) setState({ ...DEFAULT_STATE, ...data.state, mastery: mergeMastery(data.state.mastery ?? []), schoolDateOverrides: data.state.schoolDateOverrides ?? {} });
+        if (data.state) setState({ ...DEFAULT_STATE, ...data.state, mastery: mergeMastery(data.state.mastery ?? []), schoolDateOverrides: data.state.schoolDateOverrides ?? {}, recentQuestionIds: data.state.recentQuestionIds ?? [] });
         setSyncStatus(data.source === "fallback" ? "Mode local" : "Synchronisée");
       } catch { setSyncStatus("Mode hors connexion"); }
       finally { setHydrated(true); }
@@ -89,21 +89,22 @@ export function CapSecondaireApp() {
     handleHistory();
     if ("serviceWorker" in navigator) void navigator.serviceWorker.register("/sw.js");
     return () => { window.removeEventListener("online", handleOnline); window.removeEventListener("offline", handleOffline); window.removeEventListener("popstate", handleHistory); };
-  }, []);
+  }, [localCacheKey]);
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(state));
+    window.localStorage.setItem(localCacheKey, JSON.stringify(state));
     if (!online) return;
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/state", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ state }) });
+        if (response.status === 401) { window.location.assign("/login"); return; }
         if (!response.ok) throw new Error("save");
         setSyncStatus("Synchronisée");
       } catch { setSyncStatus("Sauvegardée sur cet appareil"); }
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [state, hydrated, online]);
+  }, [state, hydrated, online, localCacheKey]);
 
   const selectView = (next: View) => {
     if (next === "mission") setMissionMode("smart");
@@ -127,7 +128,7 @@ export function CapSecondaireApp() {
           ? errors.map((entry) => entry.id === prior.id ? { ...entry, question: question.prompt, given, answer: question.answer, explanation: question.explanation, date: new Date().toISOString().slice(0, 10), occurrences: entry.occurrences + 1 } : entry)
           : [{ id: `err-${Date.now()}`, question: question.prompt, given, answer: question.answer, skill: question.skill, explanation: question.explanation, date: new Date().toISOString().slice(0, 10), occurrences: 1 }, ...errors];
       }
-      return { ...current, mastery, errors, completedQuestions: current.completedQuestions + 1, correctAnswers: current.correctAnswers + (correct ? 1 : 0), student: { ...current.student, xp: current.student.xp + (correct ? 12 : 4) } };
+      return { ...current, mastery, errors, completedQuestions: current.completedQuestions + 1, correctAnswers: current.correctAnswers + (correct ? 1 : 0), recentQuestionIds: [question.id, ...(current.recentQuestionIds ?? []).filter((id) => id !== question.id)].slice(0, 120), student: { ...current.student, xp: current.student.xp + (correct ? 12 : 4) } };
     });
   };
 
@@ -152,7 +153,7 @@ export function CapSecondaireApp() {
       <main className="main-area" id="main-content">
         <header className="topbar">
           <div><p className="eyebrow">{pageEyebrows[view]}</p><h1 className="page-title">{view === "dashboard" ? `Bonjour ${state.student.name}` : navItems.find((item) => item.id === view)?.label} <span aria-hidden="true">{view === "dashboard" ? "👋" : ""}</span></h1></div>
-          <div className="top-actions"><div className="status-pill"><span className={`status-dot ${online ? "" : "offline"}`} />{syncStatus}</div><button type="button" className="profile-pill profile-button" onClick={() => setView("parent")} aria-label="Ouvrir l’espace Parent"><div className="avatar">{state.student.name.slice(0, 1).toUpperCase()}</div><span>{state.student.grade}</span></button></div>
+          <div className="top-actions"><div className="status-pill"><span className={`status-dot ${online ? "" : "offline"}`} />{syncStatus}</div><button type="button" className="profile-pill profile-button" onClick={() => setView("parent")} aria-label="Ouvrir l’espace Parent"><div className="avatar">{state.student.name.slice(0, 1).toUpperCase()}</div><span>{user.displayName.split(/\s+/)[0]}</span></button><form action="/api/auth/logout" method="post"><button type="submit" className="signout-button" aria-label="Se déconnecter">Déconnexion</button></form></div>
         </header>
         <InstallAppPrompt visible={view === "dashboard"} />
         <div className="content">
@@ -160,7 +161,7 @@ export function CapSecondaireApp() {
           {view === "mission" && <MissionView mode={missionMode} state={state} onAnswer={recordAnswer} onComplete={(correct, total) => recordExam(correct, total, missionMode === "diagnostic")} onBack={() => selectView("dashboard")} />}
           {view === "french" && <FrenchWorkshopView state={state} onAnswer={recordAnswer} />}
           {view === "coach" && <AiCoachView state={state} initialErrorId={coachErrorId} />}
-          {view === "exams" && <ExamsView onAnswer={recordAnswer} onComplete={(correct, total) => recordExam(correct, total, false)} />}
+          {view === "exams" && <ExamsView state={state} onAnswer={recordAnswer} onComplete={(correct, total) => recordExam(correct, total, false)} />}
           {view === "errors" && <ErrorsView state={state} onReview={() => selectView("mission")} onCoach={openCoachForError} />}
           {view === "schools" && <SchoolsView state={state} onUpdate={updateState} />}
           {view === "parent" && <ParentView state={state} onUpdate={updateState} onDiagnostic={launchDiagnostic} />}

@@ -15,6 +15,13 @@
       "when": 1787529787522,
       "tag": "0001_reset_student_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787586365353,
+      "tag": "0002_spicy_korath",
+      "breakpoints": true
     }
   ]
 }

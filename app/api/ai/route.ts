@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { buildLocalAiResult } from "../../../lib/ai-local";
 import { validateAiRequest, type AiCoachResult, type AiRequest } from "../../../lib/ai-types";
 import { extractGeminiText, isGeminiBlocked, type GeminiResponsePayload } from "../../../lib/gemini-response";
+import { getRequestUser } from "../../../lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +104,7 @@ function isCoachResult(value: unknown): value is Omit<AiCoachResult, "source" | 
 }
 
 export async function POST(request: Request) {
+  if (!await getRequestUser(request)) return Response.json({ error: "Authentification requise" }, { status: 401, headers: { "Cache-Control": "no-store" } });
   let input: AiRequest | null = null;
   try { input = validateAiRequest(await request.json()); } catch { /* corps invalide */ }
   if (!input) return Response.json({ error: "Demande invalide" }, { status: 400, headers: { "Cache-Control": "no-store" } });
