@@ -70,7 +70,7 @@ export function CapSecondaireApp({ user }: { user: { id: string; displayName: st
         const response = await fetch("/api/state", { cache: "no-store" });
         if (response.status === 401) { window.location.assign("/login"); return; }
         const data = (await response.json()) as { state?: AppState; source?: string };
-        if (data.state) setState({ ...DEFAULT_STATE, ...data.state, mastery: mergeMastery(data.state.mastery ?? []), schoolDateOverrides: data.state.schoolDateOverrides ?? {} });
+        if (data.state) setState({ ...DEFAULT_STATE, ...data.state, mastery: mergeMastery(data.state.mastery ?? []), schoolDateOverrides: data.state.schoolDateOverrides ?? {}, recentQuestionIds: data.state.recentQuestionIds ?? [] });
         setSyncStatus(data.source === "fallback" ? "Mode local" : "Synchronisée");
       } catch { setSyncStatus("Mode hors connexion"); }
       finally { setHydrated(true); }
@@ -128,7 +128,7 @@ export function CapSecondaireApp({ user }: { user: { id: string; displayName: st
           ? errors.map((entry) => entry.id === prior.id ? { ...entry, question: question.prompt, given, answer: question.answer, explanation: question.explanation, date: new Date().toISOString().slice(0, 10), occurrences: entry.occurrences + 1 } : entry)
           : [{ id: `err-${Date.now()}`, question: question.prompt, given, answer: question.answer, skill: question.skill, explanation: question.explanation, date: new Date().toISOString().slice(0, 10), occurrences: 1 }, ...errors];
       }
-      return { ...current, mastery, errors, completedQuestions: current.completedQuestions + 1, correctAnswers: current.correctAnswers + (correct ? 1 : 0), student: { ...current.student, xp: current.student.xp + (correct ? 12 : 4) } };
+      return { ...current, mastery, errors, completedQuestions: current.completedQuestions + 1, correctAnswers: current.correctAnswers + (correct ? 1 : 0), recentQuestionIds: [question.id, ...(current.recentQuestionIds ?? []).filter((id) => id !== question.id)].slice(0, 120), student: { ...current.student, xp: current.student.xp + (correct ? 12 : 4) } };
     });
   };
 
@@ -161,7 +161,7 @@ export function CapSecondaireApp({ user }: { user: { id: string; displayName: st
           {view === "mission" && <MissionView mode={missionMode} state={state} onAnswer={recordAnswer} onComplete={(correct, total) => recordExam(correct, total, missionMode === "diagnostic")} onBack={() => selectView("dashboard")} />}
           {view === "french" && <FrenchWorkshopView state={state} onAnswer={recordAnswer} />}
           {view === "coach" && <AiCoachView state={state} initialErrorId={coachErrorId} />}
-          {view === "exams" && <ExamsView onAnswer={recordAnswer} onComplete={(correct, total) => recordExam(correct, total, false)} />}
+          {view === "exams" && <ExamsView state={state} onAnswer={recordAnswer} onComplete={(correct, total) => recordExam(correct, total, false)} />}
           {view === "errors" && <ErrorsView state={state} onReview={() => selectView("mission")} onCoach={openCoachForError} />}
           {view === "schools" && <SchoolsView state={state} onUpdate={updateState} />}
           {view === "parent" && <ParentView state={state} onUpdate={updateState} onDiagnostic={launchDiagnostic} />}
